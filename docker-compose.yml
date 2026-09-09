@@ -1,0 +1,96 @@
+version: '3.8'
+services:
+  # ---------------------------------------------------------------------------
+  # Service Discovery & Infrastructure
+  # ---------------------------------------------------------------------------
+  zookeeper:
+    image: ${ZOOKEEPER_IMAGE_NAME}
+    container_name: ${ZOOKEEPER_CONTAINER_NAME}
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: ${KAFKA_IMAGE_NAME}
+    container_name: ${KAFKA_CONTAINER_NAME}
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # ---------------------------------------------------------------------------
+  # Databases (Database-Per-Service)
+  # ---------------------------------------------------------------------------
+  identity-db:
+    image: ${POSTGRES_IMAGE_NAME}
+    container_name: ${POSTGRES_CONTAINER_NAME_PREFIX}${DATABSE_NAME_IDENTITY}
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME_IDENTITY}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+  catalog-db:
+    image: ${POSTGRES_IMAGE_NAME}
+    container_name: ${POSTGRES_CONTAINER_NAME_PREFIX}${DATABSE_NAME_CATALOG}
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME_CATALOG}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+  order-db:
+    image: ${POSTGRES_IMAGE_NAME}
+    container_name: ${POSTGRES_CONTAINER_NAME_PREFIX}${DATABSE_NAME_ORDER}
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME_ORDER}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+  inventory-db:
+    image: ${POSTGRES_IMAGE_NAME}
+    container_name: ${POSTGRES_CONTAINER_NAME_PREFIX}+${DATABSE_NAME_INVENTORY}
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME_INVENTORY}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+  payment-db:
+    image: ${POSTGRES_IMAGE_NAME}
+    container_name: ${POSTGRES_CONTAINER_NAME_PREFIX}+${DATABSE_NAME_PAYMENT}
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME_PAYMENT}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+  shipping-db:
+    image: ${POSTGRES_IMAGE_NAME}
+    container_name: ${POSTGRES_CONTAINER_NAME_PREFIX}+${DATABSE_NAME_SHIPPING}
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME_SHIPPING}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+networks:
+  default:
+    name: ${INTERNAL_NETWORK_NAME}
