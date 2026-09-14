@@ -1,4 +1,4 @@
-package ir.aspireapps.common.event;
+package ir.aspireapps.micromart.common.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
