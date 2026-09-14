@@ -11,7 +11,7 @@ services:
       dockerfile: Dockerfile
 
     environment:
-      #      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka/   FOR DEPLOY
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka/
       ACCESS_TOKEN_SECURITY_KEY: ${ACCESS_TOKEN_SECURITY_KEY}
 
     ports:
