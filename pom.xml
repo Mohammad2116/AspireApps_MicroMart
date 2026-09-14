@@ -28,7 +28,7 @@
     <modules>
         <module>common</module>
 <!--        <module>gateway-service</module>-->
-<!--        <module>discovery-service</module>-->
+        <module>discovery-service</module>
 <!--        <module>identity-service</module>-->
 <!--        <module>catalog-service</module>-->
 <!--        <module>order-service</module>-->
