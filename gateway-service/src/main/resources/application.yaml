@@ -2,6 +2,14 @@ spring:
   application:
     name: gateway-service
 
+  cloud:
+    gateway:
+      routes:
+        - id: homepage
+          uri: lb://gateway-service
+          predicates:
+            - Path=/ir/aspireapps/micromart/home
+
 server:
   port: 8080
 
@@ -9,3 +17,23 @@ eureka:
   client:
     register_with_eureka: true
     fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+
+logging:
+  pattern:
+    console: >
+      %d{yyyy-MM-dd HH:mm:ss.SSS}
+      %-5level
+      [%X{requestId:-N/A}]
+      [%X{userId:-anonymous}]
+      [%X{username:-anonymous}]
+      [%thread]
+      %logger{36}
+      -
+      %msg
+      
+
+#  level:
+#    ir.aspireapps: DEBUG
+#    feign: DEBUG
