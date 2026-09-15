@@ -2,7 +2,7 @@ services:
   # ---------------------------------------------------------------------------
   # Identity Service
   # ---------------------------------------------------------------------------
-  gateway-service:
+  identity-service:
     image: micromart/identity-service
     container_name: micromart-identity-service
     build:

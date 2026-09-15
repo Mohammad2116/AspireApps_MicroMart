@@ -12,7 +12,7 @@ spring:
     hibernate:
       dll-auto: none
     open-in-view: false
-    show-sql: false
+    show-sql: true
 
   sql:
     init:
@@ -28,8 +28,31 @@ server:
 
 eureka:
   client:
-    service_url:
-      defaultZone: http://eureka-server:8761/eureka/
-    fetch_registry: true
     register_with_eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
 
+logging:
+  pattern:
+    console: >
+      %d{yyyy-MM-dd HH:mm:ss.SSS}
+      %-5level
+      [%X{requestId:-N/A}]
+      [%X{userId:-anonymous}]
+      [%X{username:-anonymous}]
+      [%thread]
+      %logger{36}
+      -
+      %msg
+
+security:
+  jwt:
+    access-token-secret-key:${ACCESS_TOKEN_SECRET_KEY}
+    access-token-expiration-ms:${ACCESS_TOKEN_EXPIRATION_MS}
+    refresh-token-secret-key:${REFRESH_TOKEN_SECRET_KEY}
+    refresh-token-expiration-ms:${REFRESH_TOKEN_EXPIRATION_MS}
+
+app:
+  security:
+    cookies-security: ${COOKIE_SECURE}
