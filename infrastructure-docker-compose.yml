@@ -82,7 +82,6 @@ services:
     ports:
       - "5431:5431"
     environment:
-      POSTGRES_DB: ${DATABASE_NAME_IDENTITY}
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
