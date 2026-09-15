@@ -1,5 +1,7 @@
 package ir.aspireapps.common.utility.log;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.web.server.ServerWebExchange;
@@ -37,6 +39,9 @@ public final class LoggingContextManager {
     public static boolean isRequestIdSet(ServerWebExchange exchange){
         return exchange.getRequest().getHeaders().containsKey(LoggingConstants.REQUEST_ID_HEADER);
     }
+    public static boolean isRequestIdSet(HttpServletRequest request){
+        return request.getHeader(LoggingConstants.REQUEST_ID_HEADER) != null;
+    }
 
     public static void setRandomRequestId(ServerWebExchange exchange){
         clear();
@@ -49,5 +54,16 @@ public final class LoggingContextManager {
         String requestId = MDC.get(LoggingConstants.REQUEST_ID);
         exchange.getRequest().getHeaders().add(LoggingConstants.REQUEST_ID_HEADER, requestId);
         exchange.getResponse().getHeaders().add(LoggingConstants.REQUEST_ID_HEADER, requestId);
+    }
+
+    public static void setRandomRequestId(HttpServletResponse response){
+        clear();
+        String randomRequestId = UUID.randomUUID().toString();
+        putRequestId(randomRequestId);
+        response.addHeader(LoggingConstants.REQUEST_ID_HEADER, randomRequestId);
+    }
+    public static void setCurrentRequestId(HttpServletResponse response){
+        String requestId = MDC.get(LoggingConstants.REQUEST_ID);
+        response.addHeader(LoggingConstants.REQUEST_ID_HEADER, requestId);
     }
 }
