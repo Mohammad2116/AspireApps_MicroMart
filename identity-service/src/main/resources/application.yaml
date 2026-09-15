@@ -48,10 +48,10 @@ logging:
 
 security:
   jwt:
-    access-token-secret-key:${ACCESS_TOKEN_SECRET_KEY}
-    access-token-expiration-ms:${ACCESS_TOKEN_EXPIRATION_MS}
-    refresh-token-secret-key:${REFRESH_TOKEN_SECRET_KEY}
-    refresh-token-expiration-ms:${REFRESH_TOKEN_EXPIRATION_MS}
+    access-token-secret-key: ${ACCESS_TOKEN_SECRET_KEY}
+    access-token-expiration-ms: ${ACCESS_TOKEN_EXPIRATION_MS}
+    refresh-token-secret-key: ${REFRESH_TOKEN_SECRET_KEY}
+    refresh-token-expiration-ms: ${REFRESH_TOKEN_EXPIRATION_MS}
 
 app:
   security:
