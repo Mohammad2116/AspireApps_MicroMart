@@ -1,154 +1,20 @@
 services:
   # ---------------------------------------------------------------------------
-  # Service Discovery & Infrastructure
+  # Identity Service
   # ---------------------------------------------------------------------------
-  kafka:
-    image: ${KAFKA_IMAGE_NAME}
-    container_name: ${KAFKA_CONTAINER_NAME}
-    hostname: kafka
-    ports:
-      - "9092:9092"
-      - "29092:29092" # Expose for host IDE/local microservices
+  gateway-service:
+    image: micromart/identity-service
+    container_name: micromart-identity-service
+    build:
+      context: ./identity-service
+      dockerfile: Dockerfile
 
     environment:
-      # KRaft cluster configuration
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-
-      # Listeners configuration
-      KAFKA_LISTENERS: 'PLAINTEXT://:9092,PLAINTEXT_HOST://:29092,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-
-      # Storage & Clustering
-      CLUSTER_ID: ${KAFKA_CLUSTER_ID}
-      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
-
-      # Durability & Partitions
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_NUM_PARTITIONS: ${KAFKA_NUM_PARTITIONS}
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: ${KAFKA_AUTO_CREATE_TOPICS}
-
-      # Message & Retention Policy
-      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_LOG_RETENTION_HOURS}
-      KAFKA_LOG_SEGMENT_BYTES: ${KAFKA_LOG_SEGMENT_BYTES}
-      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: ${KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS}
-      KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_MESSAGE_MAX_BYTES}
-
-    healthcheck:
-      test: ["CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:9092"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 15s
-
-    volumes:
-      - kafka-data:/var/lib/kafka/data
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      ACCESS_TOKEN_SECURITY_KEY: ${ACCESS_TOKEN_SECURITY_KEY}
 
     networks:
       - micromart-network
-
-  kafka-ui:
-    image: ${KAFKA_UI_IMAGE_NAME}
-    container_name: ${KAFKA_UI_CONTAINER_NAME}
-    ports:
-      - "8089:8080"
-
-    environment:
-      KAFKA_CLUSTERS_0_NAME: ${KAFKA_CLUSTER_0_NAME}
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      DYNAMIC_CONFIG_ENABLED: ${KAFKA_CONFIG_ENABLE}
-
-    depends_on:
-      kafka:
-        condition: service_healthy
-
-    networks:
-      - micromart-network
-
-  # ---------------------------------------------------------------------------
-  # Databases (Database-Per-Service in one Postgres container)
-  # ---------------------------------------------------------------------------
-  postgres:
-    image: ${POSTGRES_IMAGE_NAME}
-    container_name: ${POSTGRES_CONTAINER_NAME}
-    hostname: postgres
-    ports:
-      - "5431:5431"
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME_IDENTITY}
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME_IDENTITY}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
-
-    networks:
-      - micromart-network
-
-#  # ---------------------------------------------------------------------------
-#  # Discovery Service (Eureka Server)
-#  # ---------------------------------------------------------------------------
-#  discovery-service:
-#    image: ${DISCOVERY_SERVICE_IMAGE_NAME}
-#    container_name: ${DISCOVERY_SERVICE_CONTAINER_NAME}
-#    build:
-#      context: ./discovery-service
-#      dockerfile: Dockerfile
-#
-#    environment:
-#      EUREKA_CLIENT_REGISTER_WITH_EUREKA: 'false'
-#      EUREKA_CLIENT_FETCH_REGISTRY: 'false'
-#
-#    healthcheck:
-#      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 10
-#      start_period: 25s
-#
-#    ports:
-#      - "8761:8761"
-#
-#    networks:
-#      - micromart-network
-#
-#  # ---------------------------------------------------------------------------
-#  # Gateway Service (Spring Cloud Gateway)
-#  # ---------------------------------------------------------------------------
-#  gateway-service:
-#    image: ${GATEWAY_SERVICE_IMAGE_NAME}
-#    container_name: ${GATEWAY_SERVICE_CONTAINER_NAME}
-#    build:
-#      context: ./gateway-service
-#      dockerfile: Dockerfile
-#
-#    environment:
-#      #      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka/   FOR DEPLOY
-#      ACCESS_TOKEN_SECURITY_KEY: ${ACCESS_TOKEN_SECURITY_KEY}
-#
-#    depends_on:
-#      discovery-service:
-#        condition: service_healthy
-#
-#    ports:
-#      - "8089:8080"
-#
-#    networks:
-#      - micromart-network
 
 # -----------------------------------------------------------------------------
 # Networks and Volumes
@@ -156,8 +22,3 @@ services:
 networks:
   micromart-network:
     driver: bridge
-
-volumes:
-  postgres-data:
-  kafka-data:
-

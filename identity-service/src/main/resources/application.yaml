@@ -1,3 +1,35 @@
 spring:
   application:
     name: identity-service
+
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME_IDENTITY}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      dll-auto: none
+    open-in-view: false
+    show-sql: false
+
+  sql:
+    init:
+      mode: always
+      platform: postgres
+
+  flyaway:
+    enabled: true
+    location: classpath:db/migration
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service_url:
+      defaultZone: http://eureka-server:8761/eureka/
+    fetch_registry: true
+    register_with_eureka: true
+
