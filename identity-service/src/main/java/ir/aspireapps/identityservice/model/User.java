@@ -64,6 +64,7 @@ public class User {
     private Instant deletedAt = null;
 
     @Builder.Default
+    @Setter(AccessLevel.NONE)
     @OneToMany(
             cascade = CascadeType.ALL,
             orphanRemoval = true,

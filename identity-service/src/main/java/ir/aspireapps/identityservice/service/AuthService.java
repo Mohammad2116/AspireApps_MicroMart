@@ -40,7 +40,6 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
 
-        //TODO: try login after register an account
         return AuthResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -50,7 +49,7 @@ public class AuthService {
                 .accessToken(jwtService.generateAccessToken(user))
                 .accessExpiresIn(jwtService.getExpirationInMS())
                 .refreshToken(refreshTokenService.generateRefreshToken(user, registerRequest.deviceName(), registerRequest.deviceId()))
-                .refreshExpiresIn(jwtService.getExpirationInMS())
+                .refreshExpiresIn(refreshTokenService.getExpirationInMS())
                 .build();
     }
 
@@ -67,10 +66,10 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .issuedAt(Instant.now())
-                .accessToken(null)
-                .accessExpiresIn(0L)
-                .refreshToken(null)
-                .refreshExpiresIn(0L)
+                .accessToken(jwtService.generateAccessToken(user))
+                .accessExpiresIn(jwtService.getExpirationInMS())
+                .refreshToken(refreshTokenService.generateRefreshToken(user, loginRequest.deviceName(), loginRequest.deviceId()))
+                .refreshExpiresIn(refreshTokenService.getExpirationInMS())
                 .build();
     }
 }
