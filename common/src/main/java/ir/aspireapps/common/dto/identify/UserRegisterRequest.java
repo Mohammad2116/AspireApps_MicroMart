@@ -3,6 +3,8 @@ package ir.aspireapps.common.dto.identify;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
+import java.util.UUID;
+
 @Builder
 public record UserRegisterRequest(
     @NotEmpty(message = "Username can't be empty")
@@ -13,7 +15,7 @@ public record UserRegisterRequest(
     )
     String username,
 
-    @NotEmpty
+    @NotEmpty(message = "Password can't be empty")
     @Size(min = 8, max = 150, message = "Password must be 6-255 characters")
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,150}$",
@@ -21,9 +23,19 @@ public record UserRegisterRequest(
     )
     String password,
 
+    @NotEmpty(message = "Confirm password can't be empty")
+    String confirmPassword,
+
     @NotBlank(message = "Email is required")
     @Size(max = 254, message = "Email must not exceed 254 characters")
     @Email(message = "Please provide a valid email address")
-    String email
+    String email,
+
+    @NotBlank(message = "Device name is required")
+    @Size(max = 512, message = "Email must not exceed 512 characters")
+    String deviceName,
+
+    @NotNull(message = "Device Id is required as a valued UUID number")
+    UUID deviceId
 ) {
 }
