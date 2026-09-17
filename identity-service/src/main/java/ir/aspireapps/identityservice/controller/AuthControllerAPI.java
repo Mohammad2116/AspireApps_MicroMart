@@ -36,7 +36,7 @@ public class AuthControllerAPI {
                 );
     }
 
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(
             @Valid @RequestBody UserRefreshRequest userRefreshRequest){
         return ResponseEntity

@@ -14,13 +14,16 @@ import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class RefreshTokenService {
     private final long expirationMS;
     private final RefreshTokenGenerator refreshTokenGenerator;
@@ -36,19 +39,14 @@ public class RefreshTokenService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
-    public String generateRefreshToken(
-            @NotNull(message = "Can't generate refresh token without User information")
-            User user,
-            @NotBlank(message = "Device name is required")
-            @Size(max = 512, message = "Email must not exceed 512 characters")
-            String deviceName,
-            @NotNull(message = "Device Id is required as a valued UUID number")
-            UUID deviceId) {
+    @Transactional
+    public String generateRefreshToken(User user, String deviceName, UUID deviceId) {
 
-        String token = refreshTokenGenerator.generateRefreshToken();
+        String rawToken = refreshTokenGenerator.generateRefreshToken();
+        String hashToken = refreshTokenGenerator.hashRefreshToken(rawToken);
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
-                .hashedToken(refreshTokenGenerator.hashRefreshToken(token))
+                .hashedToken(hashToken)
                 .expirationAt(Instant.now().plusMillis(expirationMS))
                 .deviceName(deviceName)
                 .deviceId(deviceId)
@@ -56,16 +54,17 @@ public class RefreshTokenService {
         RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
         user.addRefreshTokens(savedRefreshToken);
 
-        return token;
+        return rawToken;
     }
 
     public long getExpirationInMS() {
         return expirationMS;
     }
 
+    @Transactional
     public boolean verifyAndRevoke(@NotNull String refreshToken, @NotBlank String deviceName, @NotBlank UUID deviceId) {
         String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
-        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndNotRevoked(hashedRefreshToken)
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndRevokedFalse(hashedRefreshToken)
                 .orElseThrow(() -> new AuthenticationFailedException("Refresh token not found or revoked"));
         if(foundRefreshToken.getExpirationAt().isBefore(Instant.now())) {
             throw new AuthenticationFailedException("Refresh token expired");
@@ -80,9 +79,10 @@ public class RefreshTokenService {
         }
     }
 
+    @Transactional
     public User getTokenUser(@NotNull String refreshToken) {
         String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
-        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndNotRevoked(hashedRefreshToken)
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndRevokedFalse(hashedRefreshToken)
                 .orElseThrow(() -> new AuthenticationFailedException("Refresh token not found or revoked"));
         return foundRefreshToken.getUser();
     }
@@ -97,7 +97,7 @@ public class RefreshTokenService {
             @NotNull(message = "Device Id is required as a valued UUID number")
             UUID deviceId) {
         String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
-        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndNotRevoked(hashedRefreshToken)
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndRevokedFalse(hashedRefreshToken)
                 .orElseThrow(() -> new AuthenticationFailedException("Refresh token not found or revoked"));
 
         if(foundRefreshToken.getExpirationAt().isBefore(Instant.now())) {
@@ -105,12 +105,19 @@ public class RefreshTokenService {
         }
         if(foundRefreshToken.getDeviceName().equals(deviceName) &&
                 foundRefreshToken.getDeviceId().equals(deviceId)) {
-            List<RefreshToken> tokens = refreshTokenRepository.findByUserAndNotRevoked(foundRefreshToken.getUser());
+            List<RefreshToken> tokens = refreshTokenRepository.findByUserAndRevokedFalse(foundRefreshToken.getUser());
             tokens.forEach(RefreshToken::revoke);
             return true;
         } else {
             foundRefreshToken.revoke();
             throw new AuthenticationFailedException("Illegal or stolen refresh token");
         }
+    }
+
+    public Optional<RefreshToken> getUserTokenForDeviceId(
+            User user,
+            @NotNull(message = "Device Id is required as a valued UUID number")
+            UUID deviceId) {
+        return refreshTokenRepository.findByUserAndDeviceIdAndRevokedFalse(user, deviceId);
     }
 }

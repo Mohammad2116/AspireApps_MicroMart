@@ -6,22 +6,24 @@ import ir.aspireapps.common.utility.jwt.JwtClaimConstants;
 import ir.aspireapps.identityservice.model.User;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 
+@Service
+@Transactional(readOnly = true)
 public class JwtService {
     @Getter
     private final long expirationInMS;
     private final SecretKey secretKey;
 
     public JwtService(
-            @Value("${security.jwt.access-token-secret-key}")
-            String secretKey,
-            @Value("$security.jwt.access-token-expiration-ms")
-            long expirationInMS) {
+            @Value("${security.jwt.access-token-secret-key}") String secretKey,
+            @Value("${security.jwt.access-token-expiration-ms}") long expirationInMS) {
         this.expirationInMS = expirationInMS;
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }

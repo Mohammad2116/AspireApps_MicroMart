@@ -5,6 +5,7 @@ import ir.aspireapps.common.error.AuthenticationFailedException;
 import ir.aspireapps.common.error.DuplicatedEntityException;
 import ir.aspireapps.common.error.EntityNotFoundException;
 import ir.aspireapps.identityservice.mapper.UserMapper;
+import ir.aspireapps.identityservice.model.RefreshToken;
 import ir.aspireapps.identityservice.model.User;
 import ir.aspireapps.identityservice.repo.UserRepository;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,10 +29,15 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
+    @Transactional
     public AuthResponse register(@Valid UserRegisterRequest registerRequest) {
         if(userRepository.existsByUsernameOrEmail(registerRequest.username(), registerRequest.email()))
             throw new DuplicatedEntityException("Username:[" + registerRequest.username() +
-                    "] or email[" + registerRequest.email() + "] already exists.");
+                    "] or email[" + registerRequest.email() + "] already exists");
+        if(!registerRequest.password().equals(registerRequest.confirmPassword())){
+            throw new IllegalArgumentException("Passwords don't match");
+        }
+
         User user = userMapper.toEntity(registerRequest);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
@@ -48,6 +55,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
     public AuthResponse login(@Valid UserLoginRequest loginRequest) {
         User user = userRepository.findByUsername(loginRequest.username())
                 .orElseThrow(() -> new EntityNotFoundException("User [" + loginRequest.username() + "] not exists"));
@@ -55,6 +63,9 @@ public class AuthService {
         if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
             throw new AuthenticationFailedException("Wrong password");
         }
+
+        refreshTokenService.getUserTokenForDeviceId(user, loginRequest.deviceId()).ifPresent(RefreshToken::revoke);
+
         return AuthResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -68,6 +79,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
     public AuthResponse refresh(@Valid UserRefreshRequest userRefreshRequest) {
         User user = refreshTokenService.getTokenUser(userRefreshRequest.refreshToken());
 
@@ -89,6 +101,7 @@ public class AuthService {
         throw new AuthenticationFailedException("Something went wrong while refreshing");
     }
 
+    @Transactional
     public void logout(@Valid UserLogoutRequest userLogoutRequest) {
         User user = refreshTokenService.getTokenUser(userLogoutRequest.refreshToken());
 
@@ -97,6 +110,7 @@ public class AuthService {
         throw new AuthenticationFailedException("Something went wrong while refreshing");
     }
 
+    @Transactional
     public void logoutAll(@Valid UserLogoutRequest userLogoutRequest) {
         User user = refreshTokenService.getTokenUser(userLogoutRequest.refreshToken());
 
