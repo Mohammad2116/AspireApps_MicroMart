@@ -1,0 +1,74 @@
+package ir.aspireapps.identityservice.service;
+
+import ir.aspireapps.common.dto.identify.AuthResponse;
+import ir.aspireapps.common.dto.identify.UserLoginRequest;
+import ir.aspireapps.common.dto.identify.UserRegisterRequest;
+import ir.aspireapps.common.dto.identify.UserResponse;
+import ir.aspireapps.common.error.AuthenticationFailedException;
+import ir.aspireapps.common.error.DuplicatedEntityException;
+import ir.aspireapps.common.error.EntityNotFoundException;
+import ir.aspireapps.identityservice.mapper.UserMapper;
+import ir.aspireapps.identityservice.model.User;
+import ir.aspireapps.identityservice.repo.UserRepository;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+
+@Slf4j
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+public class AuthService {
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthResponse register(@Valid UserRegisterRequest registerRequest) {
+        if(userRepository.existsByUsernameOrEmail(registerRequest.username(), registerRequest.email()))
+            throw new DuplicatedEntityException("Username:[" + registerRequest.username() +
+                    "] or email[" + registerRequest.email() + "] already exists.");
+        User user = userMapper.toEntity(registerRequest);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User savedUser = userRepository.save(user);
+
+        //TODO: try login after register an account
+        return AuthResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .issuedAt(Instant.now())
+                .accessToken(null)
+                .accessExpiresIn(0L)
+                .refreshToken(null)
+                .refreshExpiresIn(0L)
+                .build();
+    }
+
+    public AuthResponse login(@Valid UserLoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.username())
+                .orElseThrow(() -> new EntityNotFoundException("User [" + loginRequest.username() + "] not exists"));
+
+        if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+            throw new AuthenticationFailedException("Wrong password");
+        }
+        return AuthResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .issuedAt(Instant.now())
+                .accessToken(null)
+                .accessExpiresIn(0L)
+                .refreshToken(null)
+                .refreshExpiresIn(0L)
+                .build();
+    }
+}

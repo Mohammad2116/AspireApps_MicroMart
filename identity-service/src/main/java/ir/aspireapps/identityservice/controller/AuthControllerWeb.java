@@ -1,4 +1,4 @@
-package ir.aspireapps.identityservice.model;
+package ir.aspireapps.identityservice.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
