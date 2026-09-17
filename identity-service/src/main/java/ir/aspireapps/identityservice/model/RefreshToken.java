@@ -22,7 +22,7 @@ public class RefreshToken {
     @Column(nullable = false, unique = true, length = 512)
     private String hashedToken;
 
-    @Column(nullable = false, length = 512)
+    @Column(nullable = false, length = 256)
     private String deviceName;
     @Column(nullable = false)
     private UUID deviceId;

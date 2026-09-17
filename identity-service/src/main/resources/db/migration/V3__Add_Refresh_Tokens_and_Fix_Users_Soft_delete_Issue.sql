@@ -10,7 +10,7 @@ CREATE TABLE refresh_tokens (
                                 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                                 user_id UUID NOT NULL,
                                 hashed_token VARCHAR(512) NOT NULL,
-                                device_name VARCHAR(512) NOT NULL,
+                                device_name VARCHAR(256) NOT NULL,
                                 device_id UUID NOT NULL,
                                 expiration_at TIMESTAMPTZ NOT NULL,
                                 revoked BOOLEAN NOT NULL DEFAULT FALSE,

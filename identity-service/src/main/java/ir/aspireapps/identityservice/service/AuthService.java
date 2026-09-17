@@ -1,9 +1,6 @@
 package ir.aspireapps.identityservice.service;
 
-import ir.aspireapps.common.dto.identify.AuthResponse;
-import ir.aspireapps.common.dto.identify.UserLoginRequest;
-import ir.aspireapps.common.dto.identify.UserRegisterRequest;
-import ir.aspireapps.common.dto.identify.UserResponse;
+import ir.aspireapps.common.dto.identify.*;
 import ir.aspireapps.common.error.AuthenticationFailedException;
 import ir.aspireapps.common.error.DuplicatedEntityException;
 import ir.aspireapps.common.error.EntityNotFoundException;
@@ -13,8 +10,6 @@ import ir.aspireapps.identityservice.repo.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,5 +66,42 @@ public class AuthService {
                 .refreshToken(refreshTokenService.generateRefreshToken(user, loginRequest.deviceName(), loginRequest.deviceId()))
                 .refreshExpiresIn(refreshTokenService.getExpirationInMS())
                 .build();
+    }
+
+    public AuthResponse refresh(@Valid UserRefreshRequest userRefreshRequest) {
+        User user = refreshTokenService.getTokenUser(userRefreshRequest.refreshToken());
+
+        if(refreshTokenService.verifyAndRevoke(userRefreshRequest.refreshToken(),
+                                                userRefreshRequest.deviceName(),
+                                                userRefreshRequest.deviceId())) {
+            return AuthResponse.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .role(user.getRole())
+                    .issuedAt(Instant.now())
+                    .accessToken(jwtService.generateAccessToken(user))
+                    .accessExpiresIn(jwtService.getExpirationInMS())
+                    .refreshToken(refreshTokenService.generateRefreshToken(user, userRefreshRequest.deviceName(), userRefreshRequest.deviceId()))
+                    .refreshExpiresIn(refreshTokenService.getExpirationInMS())
+                    .build();
+        }
+        throw new AuthenticationFailedException("Something went wrong while refreshing");
+    }
+
+    public void logout(@Valid UserLogoutRequest userLogoutRequest) {
+        User user = refreshTokenService.getTokenUser(userLogoutRequest.refreshToken());
+
+        if(refreshTokenService.verifyAndRevoke(userLogoutRequest.refreshToken(), userLogoutRequest.deviceName(), userLogoutRequest.deviceId()))
+            return;
+        throw new AuthenticationFailedException("Something went wrong while refreshing");
+    }
+
+    public void logoutAll(@Valid UserLogoutRequest userLogoutRequest) {
+        User user = refreshTokenService.getTokenUser(userLogoutRequest.refreshToken());
+
+        if(refreshTokenService.verifyAndRevokeAll(userLogoutRequest.refreshToken(), userLogoutRequest.deviceName(), userLogoutRequest.deviceId()))
+            return;
+        throw new AuthenticationFailedException("Something went wrong while refreshing");
     }
 }

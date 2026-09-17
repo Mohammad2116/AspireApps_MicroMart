@@ -1,9 +1,6 @@
 package ir.aspireapps.identityservice.controller;
 
-import ir.aspireapps.common.dto.identify.AuthResponse;
-import ir.aspireapps.common.dto.identify.UserLoginRequest;
-import ir.aspireapps.common.dto.identify.UserRegisterRequest;
-import ir.aspireapps.common.dto.identify.UserResponse;
+import ir.aspireapps.common.dto.identify.*;
 import ir.aspireapps.identityservice.service.AuthService;
 import jakarta.servlet.ServletRequest;
 import jakarta.validation.Valid;
@@ -40,17 +37,32 @@ public class AuthControllerAPI {
     }
 
     @GetMapping("/refresh")
-    public void refresh(){
-
+    public ResponseEntity<AuthResponse> refresh(
+            @Valid @RequestBody UserRefreshRequest userRefreshRequest){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        authService.refresh(userRefreshRequest)
+                );
     }
 
     @PostMapping("/logout")
-    public void logout(){
-
+    public ResponseEntity<Void> logout(
+            @Valid @RequestBody UserLogoutRequest userLogoutRequest){
+        authService.logout(userLogoutRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(null);
     }
 
     @PostMapping("/logout/all")
-    public void logoutAll(){
+    public ResponseEntity<Void> logoutAll(
+            @Valid @RequestBody UserLogoutRequest userLogoutRequest){
+        authService.logoutAll(userLogoutRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(null);
+
 
     }
 }

@@ -1,17 +1,22 @@
 package ir.aspireapps.identityservice.service;
 
+import ir.aspireapps.common.dto.identify.AuthResponse;
+import ir.aspireapps.common.dto.identify.UserRefreshRequest;
+import ir.aspireapps.common.error.AuthenticationFailedException;
 import ir.aspireapps.identityservice.model.RefreshToken;
 import ir.aspireapps.identityservice.model.User;
 import ir.aspireapps.identityservice.repo.RefreshTokenRepository;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -41,7 +46,6 @@ public class RefreshTokenService {
             UUID deviceId) {
 
         String token = refreshTokenGenerator.generateRefreshToken();
-
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .hashedToken(refreshTokenGenerator.hashRefreshToken(token))
@@ -57,5 +61,56 @@ public class RefreshTokenService {
 
     public long getExpirationInMS() {
         return expirationMS;
+    }
+
+    public boolean verifyAndRevoke(@NotNull String refreshToken, @NotBlank String deviceName, @NotBlank UUID deviceId) {
+        String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndNotRevoked(hashedRefreshToken)
+                .orElseThrow(() -> new AuthenticationFailedException("Refresh token not found or revoked"));
+        if(foundRefreshToken.getExpirationAt().isBefore(Instant.now())) {
+            throw new AuthenticationFailedException("Refresh token expired");
+        }
+        if(foundRefreshToken.getDeviceName().equals(deviceName) &&
+                foundRefreshToken.getDeviceId().equals(deviceId)) {
+            foundRefreshToken.revoke();
+            return true;
+        } else {
+            foundRefreshToken.revoke();
+            throw new AuthenticationFailedException("Illegal or stolen refresh token");
+        }
+    }
+
+    public User getTokenUser(@NotNull String refreshToken) {
+        String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndNotRevoked(hashedRefreshToken)
+                .orElseThrow(() -> new AuthenticationFailedException("Refresh token not found or revoked"));
+        return foundRefreshToken.getUser();
+    }
+
+    public boolean verifyAndRevokeAll(
+            @NotEmpty(message = "Password can't be empty")
+            @Size(min = 86, max = 86, message = "Refresh token must be exact 86 characters lenght")
+            String refreshToken,
+            @NotBlank(message = "Device name is required")
+            @Size(max = 255, message = "Device name must not exceed 255 characters")
+            String deviceName,
+            @NotNull(message = "Device Id is required as a valued UUID number")
+            UUID deviceId) {
+        String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
+        RefreshToken foundRefreshToken = refreshTokenRepository.findByHashTokenAndNotRevoked(hashedRefreshToken)
+                .orElseThrow(() -> new AuthenticationFailedException("Refresh token not found or revoked"));
+
+        if(foundRefreshToken.getExpirationAt().isBefore(Instant.now())) {
+            throw new AuthenticationFailedException("Refresh token expired");
+        }
+        if(foundRefreshToken.getDeviceName().equals(deviceName) &&
+                foundRefreshToken.getDeviceId().equals(deviceId)) {
+            List<RefreshToken> tokens = refreshTokenRepository.findByUserAndNotRevoked(foundRefreshToken.getUser());
+            tokens.forEach(RefreshToken::revoke);
+            return true;
+        } else {
+            foundRefreshToken.revoke();
+            throw new AuthenticationFailedException("Illegal or stolen refresh token");
+        }
     }
 }
