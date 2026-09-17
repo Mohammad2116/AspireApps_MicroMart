@@ -32,7 +32,7 @@ public record UserRegisterRequest(
     String email,
 
     @NotBlank(message = "Device name is required")
-    @Size(max = 512, message = "Email must not exceed 512 characters")
+    @Size(max = 255, message = "Device name must not exceed 255 characters")
     String deviceName,
 
     @NotNull(message = "Device Id is required as a valued UUID number")

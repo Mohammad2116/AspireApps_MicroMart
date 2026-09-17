@@ -1,15 +1,14 @@
 package ir.aspireapps.common.dto.identify;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
 public record UserRefreshRequest(
-        @NotEmpty(message = "Password can't be empty")
-        @Size(min = 86, max = 86, message = "Refresh token must be exact 86 characters lenght")
+        @NotBlank(message = "Refresh token is required")
+        @Size(min = 86, max = 86, message = "Refresh token must be exactly 86 characters")
         String refreshToken,
 
         @NotBlank(message = "Device name is required")
