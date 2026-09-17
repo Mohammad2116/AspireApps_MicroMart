@@ -16,11 +16,11 @@ public record UserLoginRequest(
         String username,
 
         @NotEmpty(message = "Password can't be empty")
-        @Size(min = 8, max = 150, message = "Password must be 6-255 characters")
+        @Size(min = 8, max = 150, message = "Password must be 8-255 characters")
         String password,
 
         @NotBlank(message = "Device name is required")
-        @Size(max = 512, message = "Email must not exceed 512 characters")
+        @Size(max = 512, message = "Device name must not exceed 255 characters")
         String deviceName,
 
         @NotNull(message = "Device Id is required as a valued UUID number")
