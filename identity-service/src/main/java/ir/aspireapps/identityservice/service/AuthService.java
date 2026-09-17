@@ -29,6 +29,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponse register(@Valid UserRegisterRequest registerRequest) {
         if(userRepository.existsByUsernameOrEmail(registerRequest.username(), registerRequest.email()))
@@ -45,10 +47,10 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .issuedAt(Instant.now())
-                .accessToken(null)
-                .accessExpiresIn(0L)
-                .refreshToken(null)
-                .refreshExpiresIn(0L)
+                .accessToken(jwtService.generateAccessToken(user))
+                .accessExpiresIn(jwtService.getExpirationInMS())
+                .refreshToken(refreshTokenService.generateRefreshToken(user, registerRequest.deviceName(), registerRequest.deviceId()))
+                .refreshExpiresIn(jwtService.getExpirationInMS())
                 .build();
     }
 

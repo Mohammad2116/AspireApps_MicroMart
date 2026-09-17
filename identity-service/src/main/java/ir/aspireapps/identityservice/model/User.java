@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,13 +34,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
@@ -60,4 +62,21 @@ public class User {
     @Column(name = "deleted_at")
     @Builder.Default
     private Instant deletedAt = null;
+
+    @Builder.Default
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "user")
+    private List<RefreshToken> refreshTokens = new ArrayList<>();
+
+    public void addRefreshTokens(RefreshToken refreshToken) {
+        refreshTokens.add(refreshToken);
+        refreshToken.setUser(this);
+    }
+
+    public void removeRefreshToken(RefreshToken refreshToken) {
+        refreshTokens.remove(refreshToken);
+        refreshToken.setUser(null);
+    }
 }
