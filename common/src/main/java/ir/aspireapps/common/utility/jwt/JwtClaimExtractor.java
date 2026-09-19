@@ -13,7 +13,7 @@ import javax.crypto.SecretKey;
 public class JwtClaimExtractor {
     private final SecretKey secretKey;
     public JwtClaimExtractor(
-            @Value("${security.jwt.secretKey}") String secretKey
+            @Value("${security.jwt.access-token-secret-key}") String secretKey
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
     }

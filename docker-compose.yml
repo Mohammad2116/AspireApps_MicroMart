@@ -2,16 +2,20 @@ services:
   # ---------------------------------------------------------------------------
   # Identity Service
   # ---------------------------------------------------------------------------
-  identity-service:
-    image: micromart/identity-service
-    container_name: micromart-identity-service
+  identify-service:
+    image: micromart/identify-service
+    container_name: micromart-identify-service
     build:
-      context: ./identity-service
+      context: ./identify-service
       dockerfile: Dockerfile
 
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka/
       ACCESS_TOKEN_SECURITY_KEY: ${ACCESS_TOKEN_SECURITY_KEY}
+      ACCESS_TOKEN_EXPIRATION_MS: ${ACCESS_TOKEN_EXPIRATION_MS}
+      REFRESH_TOKEN_SECURITY_KEY: ${REFRESH_TOKEN_SECURITY_KEY}
+      REFRESH_TOKEN_EXPIRATION_MS: ${REFRESH_TOKEN_EXPIRATION_MS}
+
       DATABASE_HOST: ${DATABASE_HOST}
       DATABASE_PORT: ${DATABASE_PORT}
       DATABASE_NAME_IDENTITY: ${DATABASE_NAME_IDENTITY}

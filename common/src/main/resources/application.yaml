@@ -1,3 +1,7 @@
 spring:
   application:
     name: common
+
+security:
+  jwt:
+    access-token-secret-key: ${ACCESS_TOKEN_SECURITY_KEY}

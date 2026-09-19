@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: identify-service
+
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME_IDENTITY}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      dll-auto: none
+    open-in-view: false
+    show-sql: true
+
+  sql:
+    init:
+      mode: always
+      platform: postgres
+
+  flyaway:
+    enabled: true
+    location: classpath:db/migration
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    register_with_eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+
+logging:
+  pattern:
+    console: >
+      %d{yyyy-MM-dd HH:mm:ss.SSS}
+      %-5level
+      [%X{requestId:-N/A}]
+      [%X{userId:-anonymous}]
+      [%X{username:-anonymous}]
+      [%thread]
+      %logger{36}
+      -
+      %msg
+
+security:
+  jwt:
+    access-token-secret-key: ${ACCESS_TOKEN_SECURITY_KEY}
+    access-token-expiration-ms: ${ACCESS_TOKEN_EXPIRATION_MS}
+    refresh-token-secret-key: ${REFRESH_TOKEN_SECURITY_KEY}
+    refresh-token-expiration-ms: ${REFRESH_TOKEN_EXPIRATION_MS}
+
+cookie:
+  cookie_secure: ${COOKIE_SECURE}
+  http_only: ${HTTP_ONLY}
+
+app:
+  security:
+    cookies-security: ${COOKIE_SECURE}

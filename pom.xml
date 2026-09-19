@@ -30,7 +30,7 @@
         <module>common</module>
 <!--        <module>gateway-service</module>-->
 <!--        <module>discovery-service</module>-->
-        <module>identity-service</module>
+        <module>identify-service</module>
 <!--        <module>catalog-service</module>-->
 <!--        <module>order-service</module>-->
 <!--        <module>inventory-service</module>-->
