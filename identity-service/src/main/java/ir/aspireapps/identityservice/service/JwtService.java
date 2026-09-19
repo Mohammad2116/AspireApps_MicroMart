@@ -2,7 +2,9 @@ package ir.aspireapps.identityservice.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import ir.aspireapps.common.utility.jwt.ClaimsData;
 import ir.aspireapps.common.utility.jwt.JwtClaimConstants;
+import ir.aspireapps.common.utility.jwt.JwtClaimExtractor;
 import ir.aspireapps.identityservice.model.User;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +22,16 @@ public class JwtService {
     @Getter
     private final long expirationInMS;
     private final SecretKey secretKey;
+    private final JwtClaimExtractor jwtClaimExtractor;
+
 
     public JwtService(
             @Value("${security.jwt.access-token-secret-key}") String secretKey,
-            @Value("${security.jwt.access-token-expiration-ms}") long expirationInMS) {
+            @Value("${security.jwt.access-token-expiration-ms}") long expirationInMS,
+            JwtClaimExtractor jwtClaimExtractor) {
         this.expirationInMS = expirationInMS;
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        this.jwtClaimExtractor = jwtClaimExtractor;
     }
 
     public String generateAccessToken(User user) {
@@ -38,5 +44,10 @@ public class JwtService {
                 .expiration(Date.from(now.plusMillis(expirationInMS)))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public ClaimsData checkTokenValidity(String accessToken) {
+        if(accessToken == null) return null;
+        return jwtClaimExtractor.extractClaims(accessToken);
     }
 }

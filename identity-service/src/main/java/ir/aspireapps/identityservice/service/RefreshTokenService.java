@@ -1,12 +1,10 @@
 package ir.aspireapps.identityservice.service;
 
-import ir.aspireapps.common.dto.identify.AuthResponse;
-import ir.aspireapps.common.dto.identify.UserRefreshRequest;
 import ir.aspireapps.common.error.AuthenticationFailedException;
+import ir.aspireapps.common.utility.refreshtoken.ActiveRefreshTokenData;
 import ir.aspireapps.identityservice.model.RefreshToken;
 import ir.aspireapps.identityservice.model.User;
 import ir.aspireapps.identityservice.repo.RefreshTokenRepository;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -41,7 +39,6 @@ public class RefreshTokenService {
 
     @Transactional
     public String generateRefreshToken(User user, String deviceName, UUID deviceId) {
-
         String rawToken = refreshTokenGenerator.generateRefreshToken();
         String hashToken = refreshTokenGenerator.hashRefreshToken(rawToken);
         RefreshToken refreshToken = RefreshToken.builder()
@@ -119,5 +116,27 @@ public class RefreshTokenService {
             @NotNull(message = "Device Id is required as a valued UUID number")
             UUID deviceId) {
         return refreshTokenRepository.findByUserAndDeviceIdAndRevokedFalse(user, deviceId);
+    }
+
+    public boolean checkTokenValidity(String refreshToken) {
+        String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findByHashTokenAndRevokedFalse(hashedRefreshToken)
+                .orElse(null);
+        if(refreshTokenEntity == null) return false;
+        return !refreshTokenEntity.getExpirationAt().isBefore(Instant.now());
+    }
+
+    public ActiveRefreshTokenData getActiveRefreshTokenDataIfValid(String refreshToken) {
+        String hashedRefreshToken = refreshTokenGenerator.hashRefreshToken(refreshToken);
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findByHashTokenAndRevokedFalse(hashedRefreshToken)
+                .orElse(null);
+        if(refreshTokenEntity == null) return null;
+        if(refreshTokenEntity.getExpirationAt().isBefore(Instant.now())) {return null;}
+        return ActiveRefreshTokenData.builder()
+                .deviceName(refreshTokenEntity.getDeviceName())
+                .deviceId(refreshTokenEntity.getDeviceId())
+                .expirationAt(refreshTokenEntity.getExpirationAt())
+                .createdAt(refreshTokenEntity.getCreatedAt())
+                .build();
     }
 }

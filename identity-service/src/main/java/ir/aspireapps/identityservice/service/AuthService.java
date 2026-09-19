@@ -4,6 +4,7 @@ import ir.aspireapps.common.dto.identify.*;
 import ir.aspireapps.common.error.AuthenticationFailedException;
 import ir.aspireapps.common.error.DuplicatedEntityException;
 import ir.aspireapps.common.error.EntityNotFoundException;
+import ir.aspireapps.common.utility.refreshtoken.ActiveRefreshTokenData;
 import ir.aspireapps.identityservice.mapper.UserMapper;
 import ir.aspireapps.identityservice.model.RefreshToken;
 import ir.aspireapps.identityservice.model.User;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -43,14 +43,14 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         return AuthResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole())
+                .id(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole())
                 .issuedAt(Instant.now())
-                .accessToken(jwtService.generateAccessToken(user))
+                .accessToken(jwtService.generateAccessToken(savedUser))
                 .accessExpiresIn(jwtService.getExpirationInMS())
-                .refreshToken(refreshTokenService.generateRefreshToken(user, registerRequest.deviceName(), registerRequest.deviceId()))
+                .refreshToken(refreshTokenService.generateRefreshToken(savedUser, registerRequest.deviceName(), registerRequest.deviceId()))
                 .refreshExpiresIn(refreshTokenService.getExpirationInMS())
                 .build();
     }
@@ -117,5 +117,17 @@ public class AuthService {
         if(refreshTokenService.verifyAndRevokeAll(userLogoutRequest.refreshToken(), userLogoutRequest.deviceName(), userLogoutRequest.deviceId()))
             return;
         throw new AuthenticationFailedException("Something went wrong while refreshing");
+    }
+
+    public boolean isValidAccessToken(String accessToken) {
+        return jwtService.checkTokenValidity(accessToken) != null;
+    }
+
+    public boolean isValidRefreshToken(String refreshToken) {
+        return refreshTokenService.checkTokenValidity(refreshToken);
+    }
+
+    public ActiveRefreshTokenData getRefreshTokenDataIfValid(String refreshToken) {
+        return refreshTokenService.getActiveRefreshTokenDataIfValid(refreshToken);
     }
 }

@@ -53,6 +53,10 @@ security:
     refresh-token-secret-key: ${REFRESH_TOKEN_SECRET_KEY}
     refresh-token-expiration-ms: ${REFRESH_TOKEN_EXPIRATION_MS}
 
+cookie:
+  cookie_secure: ${COOKIE_SECURE}
+  http_only: ${HTTP_ONLY}
+
 app:
   security:
     cookies-security: ${COOKIE_SECURE}

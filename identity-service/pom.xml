@@ -133,12 +133,8 @@
                     </annotationProcessorPaths>
                     <compilerArgs>
                         <!-- Generates Spring @Component automatically on mappers -->
-                        <compilerArg>
-                            -Amapstruct.defaultComponentModel=spring
-                        </compilerArg>
-                        <compilerArg>
-                            -Amapstruct.unmappedTargetPolicy=ERROR
-                        </compilerArg>
+                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
+                        <arg>-Amapstruct.unmappedTargetPolicy=ERROR</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
