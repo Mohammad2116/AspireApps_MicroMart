@@ -20,20 +20,20 @@ import java.util.List;
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private final List<String> PUBLIC_PATHS = List.of(
             "/ir/aspireapps/micromart/home",
-            "/ir/aspireapps/micromart/identify/api/v1/register",
-            "/ir/aspireapps/micromart/identify/api/v1/login",
-            "/ir/aspireapps/micromart/identify/api/v1/refresh",
-            "/ir/aspireapps/micromart/identify/web/v1/register",
-            "/ir/aspireapps/micromart/identify/web/v1/login",
-            "/ir/aspireapps/micromart/identify/web/v1/refresh"
+            "/ir/aspireapps/micromart/identify/api/v1/auth/register",
+            "/ir/aspireapps/micromart/identify/api/v1/auth/login",
+            "/ir/aspireapps/micromart/identify/api/v1/auth/refresh",
+            "/ir/aspireapps/micromart/identify/web/v1/auth/register",
+            "/ir/aspireapps/micromart/identify/web/v1/auth/login",
+            "/ir/aspireapps/micromart/identify/web/v1/auth/refresh"
             );
     private final List<String> WEB_PATHS = List.of(
             "/ir/aspireapps/micromart/home",
-            "/ir/aspireapps/micromart/identify/web/v1/register",
-            "/ir/aspireapps/micromart/identify/web/v1/login",
-            "/ir/aspireapps/micromart/identify/web/v1/refresh",
+            "/ir/aspireapps/micromart/identify/web/v1/auth/register",
+            "/ir/aspireapps/micromart/identify/web/v1/auth/login",
+            "/ir/aspireapps/micromart/identify/web/v1/auth/refresh",
 
-            "/ir/aspireapps/micromart/identify/web/v1/profile"
+            "/ir/aspireapps/micromart/identify/web/v1/auth/profile"
             );
 
     @Override
