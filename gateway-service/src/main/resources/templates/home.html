@@ -2,17 +2,151 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>AspireApps.ir</title>
-    <link rel="stylesheet" th:href="@{/css/home.css}">
-    <link rel="stylesheet" th:href="@{/css/layout.css}">
-    <link rel="stylesheet" th:href="@{/css/link_checker.css}">
+    <title>Micromart • Home</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .navbar {
+            background: #1e293b;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #475569;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #475569;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .footer {
+            margin-top: 80px;
+            padding: 20px;
+            text-align: center;
+            color: #64748b;
+        }
+    </style>
 </head>
+
 <body>
-<!--    <th:block th:insert="fragments/home :: home"></th:block>-->
-    <th:block th:insert="~{fragments/navbar :: navbar}"></th:block>
-    <hr/>
-    <th:block th:insert="~{fragments/home :: home}"></th:block>
-    <hr/>
-    <th:block th:insert="~{fragments/footer :: footer}"></th:block>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div class="logo">
+        <strong>Micromart</strong>
+    </div>
+
+    <div class="nav-links">
+        <a th:href="@{/ir/aspireapps/micromart/home}">Home</a>
+
+        <!-- If user is logged in -->
+        <a th:if="${session.username != null}"
+           th:href="@{/ir/aspireapps/micromart/identify/web/v1/user/profile}">
+            Profile
+        </a>
+
+        <!-- If user is NOT logged in -->
+        <a th:if="${session.username == null}"
+           th:href="@{/ir/aspireapps/micromart/identify/web/v1/auth/login}">
+            Login
+        </a>
+
+        <a th:if="${session.username == null}"
+           th:href="@{/ir/aspireapps/micromart/identify/web/v1/auth/register}">
+            Register
+        </a>
+
+        <!-- Logout button -->
+        <form th:if="${session.username != null}"
+              th:action="@{/ir/aspireapps/micromart/identify/web/v1/auth/logout}"
+              method="post"
+              style="display:inline;">
+            <button class="btn btn-secondary" type="submit">Logout</button>
+        </form>
+    </div>
+</div>
+
+<!-- HERO SECTION -->
+<div class="hero">
+    <h1>Welcome to Micromart</h1>
+
+    <p>
+        A clean, secure, modern authentication system built with Spring Boot,
+        Thymeleaf, and microservices architecture.
+    </p>
+
+    <!-- Buttons change based on login state -->
+    <div th:if="${session.username == null}">
+        <a class="btn btn-primary"
+           th:href="@{/ir/aspireapps/micromart/identify/web/v1/auth/login}">
+            Login
+        </a>
+
+        <a class="btn btn-secondary"
+           th:href="@{/ir/aspireapps/micromart/identify/web/v1/auth/register}">
+            Register
+        </a>
+    </div>
+
+    <div th:if="${session.username != null}">
+        <a class="btn btn-primary"
+           th:href="@{/ir/aspireapps/micromart/identify/web/v1/user/profile}">
+            Go to Profile
+        </a>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Micromart • Identity Service
+</div>
+
 </body>
 </html>
