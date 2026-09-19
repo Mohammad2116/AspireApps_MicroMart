@@ -9,6 +9,10 @@ spring:
           uri: lb://gateway-service
           predicates:
             - Path=/ir/aspireapps/micromart/home
+        - id: homepage
+          uri: lb://idenfity-service
+          predicates:
+            - Path=/ir/aspireapps/micromart/identify/api/v1,/ir/aspireapps/micromart/identify/web/v1
 
 server:
   port: 8080
