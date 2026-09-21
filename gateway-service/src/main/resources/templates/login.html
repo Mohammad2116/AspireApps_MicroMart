@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Micromart • Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 60px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1e293b;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .link a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Welcome Back</h2>
+
+    <!-- Error Messages -->
+    <div th:if="${bindingError}" class="error">Please fill all fields correctly.</div>
+    <div th:if="${userNotFound}" class="error">User not found.</div>
+    <div th:if="${authenticationError}" class="error">Incorrect username or password.</div>
+    <div th:if="${internalServerError}" class="error">Something went wrong. Try again.</div>
+
+    <!-- Login Form -->
+    <form th:action="@{/ir/aspireapps/micromart/identify/web/v1/auth/login}"
+          th:object="${userLoginForm}"
+          method="post">
+
+        <label for="username">Username</label>
+        <input type="text" id="username" th:field="*{username}" placeholder="Enter username">
+
+        <label for="password">Password</label>
+        <input type="password" id="password" th:field="*{password}" placeholder="Enter password">
+
+        <label for="deviceName">Device Name</label>
+        <input type="text" id="deviceName" th:field="*{deviceName}" placeholder="e.g. Chrome on Windows">
+
+        <label for="deviceId">Device ID</label>
+        <input type="text" id="deviceId" th:field="*{deviceId}" placeholder="Unique device identifier">
+
+        <button class="btn" type="submit">Login</button>
+    </form>
+
+    <div class="link">
+        Don't have an account?
+        <a th:href="@{/ir/aspireapps/micromart/identify/web/v1/auth/register}">Register</a>
+    </div>
+
+</div>
+
+</body>
+</html>
